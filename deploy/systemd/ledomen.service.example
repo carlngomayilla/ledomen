@@ -1,0 +1,18 @@
+[Unit]
+Description=LeDomen.com Node.js application
+After=network.target postgresql.service
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/ledomen
+EnvironmentFile=/var/www/ledomen/.env
+ExecStart=/usr/bin/node /var/www/ledomen/src/server.js
+Restart=always
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

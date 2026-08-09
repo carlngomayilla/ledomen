@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Administration | LeDomen.com</title>
+  <link rel="icon" type="image/png" href="/assets/favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+  <header class="admin-topbar">
+    <a href="/" class="admin-logo"><img src="/assets/logo-ledomen.png" alt="LeDomen.com"></a>
+    <div class="admin-actions">
+      <span id="admin-user"></span>
+      <button id="logout-btn" class="secondary" type="button" hidden>Déconnexion</button>
+    </div>
+  </header>
+
+  <main class="admin-shell">
+    <section id="login-panel" class="panel login-panel">
+      <h1>Administration</h1>
+      <p>Connectez-vous pour gérer les inscriptions et le lancement de LeDomen.com.</p>
+      <form id="login-form">
+        <label>E-mail administrateur
+          <input type="email" name="user" autocomplete="username" required>
+        </label>
+        <label>Mot de passe
+          <input type="password" name="password" autocomplete="current-password" required>
+        </label>
+        <button type="submit">Se connecter</button>
+        <p id="login-status" class="status" role="status" aria-live="polite"></p>
+      </form>
+    </section>
+
+    <section id="dashboard" hidden>
+      <div class="dashboard-head">
+        <div>
+          <span class="eyebrow">LeDomen.com</span>
+          <h1>Console responsable</h1>
+          <p class="subtle">Pré-lancement, lien de la plateforme et campagnes d’annonce.</p>
+        </div>
+        <a class="button-link" href="/api/admin/export.xlsx">Exporter les inscrits Excel</a>
+      </div>
+
+      <nav class="admin-tabs" aria-label="Sections administration">
+        <button class="tab-button active" data-tab="leads" type="button">Inscriptions</button>
+        <button class="tab-button" data-tab="launch" type="button">Lancement & e-mail</button>
+        <button class="tab-button" data-tab="campaigns" type="button">Campagnes</button>
+        <button class="tab-button" data-tab="content" type="button">Contenu & liens</button>
+      </nav>
+
+      <section class="tab-panel active" data-tab-panel="leads">
+        <div class="metrics">
+          <article class="metric"><span>Total</span><strong id="metric-total">—</strong></article>
+          <article class="metric"><span>Organisateurs</span><strong id="metric-organisateurs">—</strong></article>
+          <article class="metric"><span>Entreprises</span><strong id="metric-entreprises">—</strong></article>
+          <article class="metric"><span>Prestataires</span><strong id="metric-prestataires">—</strong></article>
+          <article class="metric metric-light"><span>E-mails éligibles</span><strong id="metric-emails">—</strong></article>
+          <article class="metric metric-light"><span>Désinscrits</span><strong id="metric-unsubscribed">—</strong></article>
+        </div>
+
+        <div class="panel">
+          <div class="filters">
+            <label>Profil
+              <select id="filter-role">
+                <option value="">Tous</option>
+                <option value="organisateur">Organisateur</option>
+                <option value="entreprise">Entreprise</option>
+                <option value="prestataire">Prestataire</option>
+              </select>
+            </label>
+
+            <label>Ville
+              <select id="filter-ville">
+                <option value="">Toutes</option>
+                <option>Libreville</option>
+                <option>Port-Gentil</option>
+                <option>Franceville</option>
+                <option>Autre</option>
+              </select>
+            </label>
+
+            <button id="refresh-btn" class="secondary" type="button">Actualiser</button>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Nom</th>
+                  <th>Contact</th>
+                  <th>Ville</th>
+                  <th>Profil</th>
+                  <th>Consentement</th>
+                  <th>Lancement</th>
+                </tr>
+              </thead>
+              <tbody id="lead-rows"></tbody>
+            </table>
+          </div>
+
+          <p id="dashboard-status" class="status" role="status" aria-live="polite"></p>
+        </div>
+      </section>
+
+      <section class="tab-panel" data-tab-panel="launch" hidden>
+        <div class="two-col">
+          <div class="panel">
+            <div class="panel-head">
+              <div>
+                <span class="eyebrow">Paramètres</span>
+                <h2>Lancement de la plateforme</h2>
+              </div>
+              <span id="site-status-badge" class="status-badge">Pré-lancement</span>
+            </div>
+
+            <form id="launch-settings-form" class="settings-form">
+              <label>Statut de la plateforme
+                <select name="site_status" id="site-status">
+                  <option value="prelaunch">Pré-lancement</option>
+                  <option value="open">Ouverte au public</option>
+                </select>
+              </label>
+
+              <label>URL de la plateforme
+                <input
+                  type="url"
+                  name="platform_url"
+                  id="platform-url"
+                  placeholder="https://app.ledomen.com"
+                >
+                <small>
+                  Cette URL remplacera automatiquement les boutons « être informé »
+                  quand le statut passera à « Ouverte ».
+                </small>
+              </label>
+
+              <label>Date de lancement
+                <input
+                  type="datetime-local"
+                  name="launch_date"
+                  id="launch-date"
+                  required
+                >
+              </label>
+
+              <label>Code promotionnel de lancement
+                <input
+                  type="text"
+                  name="promo_code"
+                  id="promo-code"
+                  maxlength="80"
+                  placeholder="Ex. BIENVENUE10"
+                >
+              </label>
+
+              <label>Nom affiché comme expéditeur
+                <input
+                  type="text"
+                  name="sender_name"
+                  id="sender-name"
+                  maxlength="100"
+                  placeholder="LeDomen.com"
+                  required
+                >
+              </label>
+
+              <label>Objet de l’e-mail de lancement
+                <input
+                  type="text"
+                  name="email_subject"
+                  id="email-subject"
+                  maxlength="180"
+                  required
+                >
+              </label>
+
+              <label>Message d’introduction
+                <textarea
+                  name="email_intro"
+                  id="email-intro"
+                  rows="6"
+                  maxlength="1800"
+                  required
+                ></textarea>
+              </label>
+
+              <div class="button-row">
+                <button type="submit">Enregistrer les paramètres</button>
+                <button
+                  id="preview-email-btn"
+                  class="secondary"
+                  type="button"
+                >
+                  Actualiser l’aperçu
+                </button>
+              </div>
+
+              <p
+                id="settings-status"
+                class="status"
+                role="status"
+                aria-live="polite"
+              ></p>
+            </form>
+          </div>
+
+          <div class="stack">
+            <div class="panel">
+              <div class="panel-head compact">
+                <div>
+                  <span class="eyebrow">Serveur e-mail</span>
+                  <h2>État SMTP</h2>
+                </div>
+                <span id="smtp-badge" class="status-badge">Vérification…</span>
+              </div>
+
+              <p id="smtp-details" class="subtle">
+                Chargement de la configuration…
+              </p>
+
+              <div class="test-mail-row">
+                <label>E-mail de test
+                  <input
+                    type="email"
+                    id="test-email"
+                    placeholder="vous@exemple.com"
+                  >
+                </label>
+
+                <button id="send-test-btn" type="button">
+                  Envoyer un test
+                </button>
+              </div>
+
+              <p
+                id="test-email-status"
+                class="status"
+                role="status"
+                aria-live="polite"
+              ></p>
+            </div>
+
+            <div class="panel preview-panel">
+              <div class="panel-head compact">
+                <div>
+                  <span class="eyebrow">Aperçu</span>
+                  <h2>E-mail reçu par l’inscrit</h2>
+                </div>
+              </div>
+
+              <iframe
+                id="email-preview"
+                title="Aperçu de l’e-mail de lancement"
+                sandbox="allow-popups allow-top-navigation-by-user-activation"
+              ></iframe>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="tab-panel" data-tab-panel="campaigns" hidden>
+        <div class="two-col campaign-layout">
+          <div class="panel">
+            <span class="eyebrow">Nouvelle campagne</span>
+            <h2>Annonce du lancement</h2>
+
+            <p class="subtle">
+              Seuls les inscrits ayant fourni une adresse e-mail,
+              donné leur consentement et non désinscrits seront sélectionnés.
+            </p>
+
+            <form id="campaign-form" class="settings-form">
+              <label>Nom interne de la campagne
+                <input
+                  type="text"
+                  name="name"
+                  id="campaign-name"
+                  maxlength="140"
+                  placeholder="Ex. Lancement officiel — vague 1"
+                  required
+                >
+              </label>
+
+              <div class="form-grid-2">
+                <label>Profil ciblé
+                  <select name="targetRole" id="campaign-role">
+                    <option value="">Tous les profils</option>
+                    <option value="organisateur">Organisateurs</option>
+                    <option value="entreprise">Entreprises</option>
+                    <option value="prestataire">Prestataires</option>
+                  </select>
+                </label>
+
+                <label>Ville ciblée
+                  <select name="targetVille" id="campaign-ville">
+                    <option value="">Toutes les villes</option>
+                    <option>Libreville</option>
+                    <option>Port-Gentil</option>
+                    <option>Franceville</option>
+                    <option>Autre</option>
+                  </select>
+                </label>
+              </div>
+
+              <label class="check-row">
+                <input type="checkbox" id="only-not-notified" checked>
+                <span>
+                  N’envoyer qu’aux personnes qui n’ont encore reçu
+                  aucune annonce de lancement
+                </span>
+              </label>
+
+              <label>Programmer l’envoi (facultatif)
+                <input
+                  type="datetime-local"
+                  id="campaign-scheduled-at"
+                >
+                <small>
+                  Laissez vide pour commencer l’envoi immédiatement.
+                </small>
+              </label>
+
+              <div class="recipient-estimate">
+                <span>Destinataires éligibles</span>
+                <strong id="eligible-count">—</strong>
+              </div>
+
+              <button id="create-campaign-btn" type="submit">
+                Lancer / programmer la campagne
+              </button>
+
+              <p class="warning-text">
+                Une campagne immédiate commence à être traitée dès sa création.
+                Envoyez d’abord un e-mail de test.
+              </p>
+
+              <p
+                id="campaign-status"
+                class="status"
+                role="status"
+                aria-live="polite"
+              ></p>
+            </form>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head compact">
+              <div>
+                <span class="eyebrow">Historique</span>
+                <h2>Campagnes e-mail</h2>
+              </div>
+
+              <button
+                id="refresh-campaigns-btn"
+                class="secondary"
+                type="button"
+              >
+                Actualiser
+              </button>
+            </div>
+
+            <div id="campaign-list" class="campaign-list"></div>
+
+            <p
+              id="campaign-list-status"
+              class="status"
+              role="status"
+              aria-live="polite"
+            ></p>
+          </div>
+        </div>
+      </section>
+
+      <section class="tab-panel" data-tab-panel="content" hidden>
+        <div class="two-col">
+          <div class="panel">
+            <div class="panel-head">
+              <div>
+                <span class="eyebrow">Page publique</span>
+                <h2>Contenu, contacts & boutons</h2>
+              </div>
+
+              <button
+                id="content-refresh-btn"
+                type="button"
+                class="secondary"
+              >
+                Actualiser
+              </button>
+            </div>
+
+            <p class="subtle">
+              Toutes les valeurs ci-dessous sont enregistrées dans PostgreSQL.
+              Aucun HTML ou JavaScript libre n’est accepté.
+            </p>
+
+            <form id="content-settings-form" class="settings-form">
+              <div class="settings-group">
+                <h3>WhatsApp</h3>
+
+                <label>Numéro WhatsApp
+                  <input
+                    type="text"
+                    id="content-whatsapp-number"
+                    placeholder="+241 77 12 34 56"
+                    maxlength="30"
+                    autocomplete="tel"
+                  >
+                  <small>
+                    Le serveur génère lui-même le lien wa.me.
+                  </small>
+                </label>
+
+                <label>Message automatique
+                  <textarea
+                    id="content-whatsapp-message"
+                    rows="3"
+                    maxlength="300"
+                    placeholder="Bonjour, je souhaite des informations sur LeDomen.com."
+                  ></textarea>
+                </label>
+
+                <label class="check-row">
+                  <input
+                    type="checkbox"
+                    id="content-show-whatsapp"
+                  >
+                  <span>Afficher WhatsApp dans le pied de page</span>
+                </label>
+              </div>
+
+              <div class="settings-group">
+                <h3>Réseaux sociaux</h3>
+
+                <label>URL Facebook
+                  <input
+                    type="url"
+                    id="content-facebook-url"
+                    placeholder="https://facebook.com/ledomen"
+                  >
+                </label>
+
+                <label class="check-row">
+                  <input
+                    type="checkbox"
+                    id="content-show-facebook"
+                  >
+                  <span>Afficher Facebook</span>
+                </label>
+
+                <label>URL Instagram
+                  <input
+                    type="url"
+                    id="content-instagram-url"
+                    placeholder="https://instagram.com/ledomen"
+                  >
+                </label>
+
+                <label class="check-row">
+                  <input
+                    type="checkbox"
+                    id="content-show-instagram"
+                  >
+                  <span>Afficher Instagram</span>
+                </label>
+
+                <label>URL LinkedIn
+                  <input
+                    type="url"
+                    id="content-linkedin-url"
+                    placeholder="https://linkedin.com/company/ledomen"
+                  >
+                </label>
+
+                <label class="check-row">
+                  <input
+                    type="checkbox"
+                    id="content-show-linkedin"
+                  >
+                  <span>Afficher LinkedIn</span>
+                </label>
+              </div>
+
+              <div class="settings-group">
+                <h3>Coordonnées publiques</h3>
+
+                <label>E-mail public
+                  <input
+                    type="email"
+                    id="content-contact-email"
+                    placeholder="contact@ledomen.com"
+                    autocomplete="email"
+                  >
+                </label>
+
+                <label class="check-row">
+                  <input
+                    type="checkbox"
+                    id="content-show-email"
+                  >
+                  <span>Afficher l’e-mail</span>
+                </label>
+
+                <label>Téléphone public
+                  <input
+                    type="text"
+                    id="content-contact-phone"
+                    placeholder="+241 77 12 34 56"
+                    maxlength="80"
+                    autocomplete="tel"
+                  >
+                </label>
+
+                <label class="check-row">
+                  <input
+                    type="checkbox"
+                    id="content-show-phone"
+                  >
+                  <span>Afficher le téléphone</span>
+                </label>
+
+                <label>Adresse / localisation
+                  <input
+                    type="text"
+                    id="content-contact-address"
+                    placeholder="Libreville — Gabon"
+                    maxlength="200"
+                  >
+                </label>
+
+                <label class="check-row">
+                  <input
+                    type="checkbox"
+                    id="content-show-address"
+                  >
+                  <span>Afficher l’adresse</span>
+                </label>
+              </div>
+
+              <div class="settings-group">
+                <span class="eyebrow">Boutons publics</span>
+                <h3>Bouton de navigation</h3>
+
+                <label class="check-row">
+                  <input
+                    type="checkbox"
+                    id="content-show-nav-cta"
+                  >
+                  <span>Afficher le bouton de navigation</span>
+                </label>
+
+                <div class="action-box">
+                  <strong>Avant le lancement</strong>
+
+                  <label>Texte
+                    <input
+                      type="text"
+                      id="content-nav-prelaunch-text"
+                      maxlength="80"
+                    >
+                  </label>
+
+                  <label>Action
+                    <select id="content-nav-prelaunch-action">
+                      <option value="signup">Aller au formulaire d’inscription</option>
+                      <option value="concept">Aller à la section concept</option>
+                      <option value="platform">Ouvrir l’URL de la plateforme</option>
+                      <option value="whatsapp">Ouvrir WhatsApp</option>
+                      <option value="external">Ouvrir une URL externe</option>
+                      <option value="email">Envoyer un e-mail</option>
+                      <option value="phone">Appeler un numéro</option>
+                      <option value="hidden">Masquer ce bouton</option>
+                    </select>
+                  </label>
+
+                  <label>Destination personnalisée
+                    <input
+                      type="text"
+                      id="content-nav-prelaunch-value"
+                      maxlength="300"
+                      placeholder="URL, e-mail ou téléphone — seulement si l’action l’exige"
+                    >
+                  </label>
+                </div>
+
+                <div class="action-box">
+                  <strong>Après l’ouverture</strong>
+
+                  <label>Texte
+                    <input
+                      type="text"
+                      id="content-nav-open-text"
+                      maxlength="80"
+                    >
+                  </label>
+
+                  <label>Action
+                    <select id="content-nav-open-action">
+                      <option value="platform">Ouvrir l’URL de la plateforme</option>
+                      <option value="signup">Aller au formulaire d’inscription</option>
+                      <option value="concept">Aller à la section concept</option>
+                      <option value="whatsapp">Ouvrir WhatsApp</option>
+                      <option value="external">Ouvrir une URL externe</option>
+                      <option value="email">Envoyer un e-mail</option>
+                      <option value="phone">Appeler un numéro</option>
+                      <option value="hidden">Masquer ce bouton</option>
+                    </select>
+                  </label>
+
+                  <label>Destination personnalisée
+                    <input
+                      type="text"
+                      id="content-nav-open-value"
+                      maxlength="300"
+                      placeholder="URL, e-mail ou téléphone — seulement si l’action l’exige"
+                    >
+                  </label>
+                </div>
+              </div>
+
+              <div class="settings-group">
+                <h3>Bouton principal du hero</h3>
+
+                <label class="check-row">
+                  <input
+                    type="checkbox"
+                    id="content-show-hero-primary"
+                  >
+                  <span>Afficher le bouton principal</span>
+                </label>
+
+                <div class="action-box">
+                  <strong>Avant le lancement</strong>
+
+                  <label>Texte
+                    <input
+                      type="text"
+                      id="content-hero-prelaunch-text"
+                      maxlength="100"
+                    >
+                  </label>
+
+                  <label>Action
+                    <select id="content-hero-prelaunch-action">
+                      <option value="signup">Aller au formulaire d’inscription</option>
+                      <option value="concept">Aller à la section concept</option>
+                      <option value="platform">Ouvrir l’URL de la plateforme</option>
+                      <option value="whatsapp">Ouvrir WhatsApp</option>
+                      <option value="external">Ouvrir une URL externe</option>
+                      <option value="email">Envoyer un e-mail</option>
+                      <option value="phone">Appeler un numéro</option>
+                      <option value="hidden">Masquer ce bouton</option>
+                    </select>
+                  </label>
+
+                  <label>Destination personnalisée
+                    <input
+                      type="text"
+                      id="content-hero-prelaunch-value"
+                      maxlength="300"
+                      placeholder="URL, e-mail ou téléphone — seulement si l’action l’exige"
+                    >
+                  </label>
+                </div>
+
+                <div class="action-box">
+                  <strong>Après l’ouverture</strong>
+
+                  <label>Texte
+                    <input
+                      type="text"
+                      id="content-hero-open-text"
+                      maxlength="100"
+                    >
+                  </label>
+
+                  <label>Action
+                    <select id="content-hero-open-action">
+                      <option value="platform">Ouvrir l’URL de la plateforme</option>
+                      <option value="signup">Aller au formulaire d’inscription</option>
+                      <option value="concept">Aller à la section concept</option>
+                      <option value="whatsapp">Ouvrir WhatsApp</option>
+                      <option value="external">Ouvrir une URL externe</option>
+                      <option value="email">Envoyer un e-mail</option>
+                      <option value="phone">Appeler un numéro</option>
+                      <option value="hidden">Masquer ce bouton</option>
+                    </select>
+                  </label>
+
+                  <label>Destination personnalisée
+                    <input
+                      type="text"
+                      id="content-hero-open-value"
+                      maxlength="300"
+                      placeholder="URL, e-mail ou téléphone — seulement si l’action l’exige"
+                    >
+                  </label>
+                </div>
+              </div>
+
+              <div class="settings-group">
+                <h3>Bouton secondaire du hero</h3>
+
+                <label class="check-row">
+                  <input
+                    type="checkbox"
+                    id="content-show-hero-secondary"
+                  >
+                  <span>Afficher le bouton secondaire</span>
+                </label>
+
+                <label>Texte
+                  <input
+                    type="text"
+                    id="content-concept-button-text"
+                    maxlength="100"
+                  >
+                </label>
+
+                <label>Action
+                  <select id="content-concept-button-action">
+                    <option value="concept">Aller à la section concept</option>
+                    <option value="signup">Aller au formulaire d’inscription</option>
+                    <option value="platform">Ouvrir l’URL de la plateforme</option>
+                    <option value="whatsapp">Ouvrir WhatsApp</option>
+                    <option value="external">Ouvrir une URL externe</option>
+                    <option value="email">Envoyer un e-mail</option>
+                    <option value="phone">Appeler un numéro</option>
+                    <option value="hidden">Masquer ce bouton</option>
+                  </select>
+                </label>
+
+                <label>Destination personnalisée
+                  <input
+                    type="text"
+                    id="content-concept-button-value"
+                    maxlength="300"
+                    placeholder="URL, e-mail ou téléphone — seulement si l’action l’exige"
+                  >
+                </label>
+              </div>
+
+              <button type="submit" id="content-save-btn">
+                Enregistrer le contenu public
+              </button>
+
+              <p
+                id="content-settings-status"
+                class="status"
+                role="status"
+                aria-live="polite"
+              ></p>
+            </form>
+          </div>
+
+          <div class="stack">
+            <div class="panel">
+              <span class="eyebrow">Aperçu</span>
+              <h2>Page publique</h2>
+
+              <p class="subtle">
+                Les changements sont lus par la landing page sans modifier le HTML.
+              </p>
+
+              <div class="button-row">
+                <a
+                  href="/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="button-link"
+                >
+                  Voir la page publique
+                </a>
+              </div>
+            </div>
+
+            <div class="panel">
+              <span class="eyebrow">Sécurité</span>
+              <h2>Valeurs filtrées côté serveur</h2>
+
+              <p class="subtle">
+                Les URL sont limitées à HTTP/HTTPS, les actions sont choisies
+                dans une liste fermée, WhatsApp est construit côté serveur,
+                et les modifications exigent une session administrateur valide
+                ainsi qu’un jeton CSRF.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <script src="/js/admin.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+{
+  "name": "ledomen-com",
+  "version": "1.5.1",
+  "private": true,
+  "description": "LeDomen.com — landing page de pré-lancement, collecte de leads, administration et campagnes e-mail de lancement.",
+  "type": "module",
+  "scripts": {
+    "start": "node src/server.js",
+    "start:env": "node --env-file=.env src/server.js",
+    "dev": "node --watch --env-file=.env src/server.js",
+    "check": "node --check src/server.js && node --check src/db.js && node --check public/js/app.js && node --check public/js/admin.js && node scripts/smoke-static.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "express": "5.2.1",
+    "pg": "8.22.0",
+    "nodemailer": "9.0.3",
+    "exceljs": "4.4.0"
+  }
+}
